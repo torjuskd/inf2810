@@ -1,0 +1,2 @@
+(define (prod x)
+  (+ (* x x) (prod (- x 1))))

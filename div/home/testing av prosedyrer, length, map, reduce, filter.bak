@@ -1,0 +1,5 @@
+(define (length2 items)
+  (null? items
+         0
+         (+ 1 (length2 (cdr items)))))
+

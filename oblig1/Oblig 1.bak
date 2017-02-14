@@ -1,0 +1,26 @@
+;;Oblig 1
+
+;;(a) (* (+ 4 2) 5)
+;; Vil evaluere til 30.
+
+;;(b) (* (+ 4 2) (5))
+;; Evaluerer til 30.
+
+;;(c) (* (4 + 2) 5)
+;; Gir feil fordi infiks-notasjon er brukt - ikke prefiks.
+
+;;(d) (define bar (/ 42 2))
+;;    bar
+;; Evaluerer til 21.
+
+;;(e) (- bar 11)
+;; Evaluerer til 10.
+
+;;(f) (/ (* bar 3 4 1) bar)
+;; Evaluerer til 21 * 3 * 4 * 1 / 21, altså 12.
+
+
+(define (tall x)
+  (tall x))
+
+(tall 5)

@@ -1,0 +1,5 @@
+(define (repl)
+  (display "repl> ")
+  (display (eval (read) (interaction-environment)))
+  (newline)
+  (repl))

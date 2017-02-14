@@ -1,0 +1,183 @@
+;; Oblig 1
+
+;; 1. Grunnleggende syntaks og semantikk i Scheme
+(display "1.")
+(newline)
+
+;; (a) (* (+ 4 2) 5)
+;; Vil evaluere til 30.
+;; Atomære uttrykk vi evaluere til seg selv, (5),
+;; og leksikalske variable og prosedyrenavn evalueres til
+;; verdiene de refererer til (+ 4 2) er en prosedyre som
+;; evaluerer til 6.
+;; Dette vil gjentas til hele uttrykket er evaluert.
+;; Vi får dermed:
+;;    (* (+ 4 2) 5)
+;;    (* 6 5)
+;; => 30
+
+;; (b) (* (+ 4 2) (5)) ;; NEI, GIR FEILMELDING
+;; Evaluerer til 30.
+;; Det samme skjer her som over, det spiller ingen rolle
+;; om vi har en parentes rundt 5.
+
+;; (c) (* (4 + 2) 5)
+;; Gir feil fordi infiks-notasjon er brukt - ikke prefiks.
+
+;; (d) (define bar (/ 42 2))
+;;    bar
+;; Variabelen bar blir bundet til verdien 21.
+;; 21 Settes inn for bar, og uttrykket evaluerer til 21.
+
+;; (e) (- bar 11)
+;; Bar erstattes med 21, og uttrykket evaluerer til 10.
+
+;; (f) (/ (* bar 3 4 1) bar)
+;; bar erstattes på samme måte som over, selv om
+;; den leksikalske variabelen forekommer to ganger
+;; (ingen overraskelse det).
+;; Evaluerer til (/(* 21 3 4 1) 21), altså 12.
+
+;; Evaluerer egentlig slik:
+;; Uttrykket evalueres operand for operand slik:
+;;(/ (* bar 3 4 1) bar)   ; reduseres til
+;;(/ (* 21 3 4 1) bar)    ; reduseres til
+;;(/ 252 bar)             ; reduseres til
+;;(/ 252 21)              ; reduseres til
+;;=> 12
+
+
+
+;; 2. Kontrollstrukturer og egendefinerte prosedyrer
+(display "2.")
+(newline)
+
+;; 2a)
+(or (= 1 2)
+"piff!"
+"paff!"
+(zero? (1 - 1)))
+;; Evaluerer til "piff!"
+;; Feilen i 4. linje vil aldri bli evaluert,
+;; og vil vi ikke legge merke til den.
+;; Dette skjer fordi or er en special form som ikke trenger å evaluere et helt uttrykk.
+;; Om en del av uttrykket evalueres til sant, trenger logisk nok ikke resten å evalueres.
+
+(and (= 1 2)
+"piff!"
+"paff!"
+(zero? (1 - 1)))
+;; Evaluerer til #f
+;; Det samme gjelder her; siste linje vil aldri kjøre.
+;; Om en del av uttrykket er usant, må hele utrykket nødvendigvis være det.
+
+(if (positive? 42)
+"poff!"
+(i-am-undefined))
+;; Evaluerer til "poff!" (Dette er fordi det boolske uttrykket er sant, og
+;; if-delen av uttrykket vil evalueres, ikke else-delen.
+;; Udefinert prosedyre vil derfor ikke kjøre.
+
+;; 2b)
+;; returnerer -1, 0, 1
+;; om input tall er hendholdsvis negativt, null, eller positivt
+(define (sign tall)
+  (if (< tall 0)
+      -1
+      (if (= tall 0)
+          0
+          1)))
+
+(define (sign2 tall)
+  (cond ((< tall 0) -1)
+        ((= tall 0) 0)
+        (else 1)))
+
+;; 2c)
+;; And og or er også special forms, og kan brukes til å skrive
+;; en prosedyre på lignende måte som vi gjorde med if.
+(define (sign3 tall)
+  (or (and (< tall 0)
+      -1)
+      (or (and(= tall 0)
+        0)
+        1)))
+;; Kunne vært enklere skrevet slik:
+;;(define (sign x)
+;;  (or (and (positive? x) 1)
+;;      (and (negative? x) -1)
+;;      0))
+
+
+;; 3. Rekursjon, iterasjon og blokkstruktur
+(display "3.")
+(newline)
+
+;; 3a)
+(define (add1 number)
+  (+ number 1))
+
+(define (sub1 number)
+  (- number 1))
+
+;; 3b)
+(define (plus x y)
+  (if (zero? x)
+         y
+         (plus (sub1 x) (add1 y))))
+
+;; 3c)
+;; Prosedyren plus (over), er skrevet som en rekursiv prosedyre,
+;; men gir opphav til en iterativ prosess.
+;; Dette er fordi (se siste linje) (sub1 x) og (add1 y) kan substitueres
+;; før prosedyren kaller på seg selv, dermed har vi såkalt hale-rekursjon.
+;; Prosedyren kan utføres som en iterativ prosess.
+
+;; Annen variant som fører til rekursiv prosess:
+(define (plus2 x y)
+  (if (zero? x)
+      y
+      (add1 (plus2 (sub1 x) y))))
+
+;; 3d)
+;;Prosedyren tar to argumenter b og n, og returnerer det minste heltallet x slik at b^(x) > n.
+(define (power-close-to b n)
+  (power-iter b n 1))
+(define (power-iter b n e)
+  (if (> (expt b e) n)
+      e
+      (power-iter b n (+ 1 e))))
+
+;; Her samme prosedyren, med blokkstruktur:
+;; Fordi vi allerede har bundet b og n, trenger de ikke være med blant parameterene
+;; til power-iter, de kan sløyfes, og vi får et forenklet uttrykk.
+(define (power-close-to b n)
+  (define (power-iter e)
+    (if (> (expt b e) n)
+        e
+        (power-iter (+ 1 e))))
+  (power-iter 1))
+
+;; 3e)
+;; Iterativ prosedyre for å beregne Fibonacci-tall:
+(define (fib n)
+  (fib-iter 1 0 n))
+(define (fib-iter a b count)
+  (if (= count 0)
+      b
+      (fib-iter (+ a b) a (- count 1))))
+
+;; Om vi skal prøve å forenkle den interne definisjonen av fib-iter, ser vi at
+;; variabelen n i fib tilsvarer variabelen count i fib-iter.
+;; En skulle dermed tro at det bare var å substituere inn n for count, og fjerne
+;; parameteren count fra den interne definisjonen av fib-iter.
+;; Det imidlertid ikke så lett, siden fib-iter skal kalle på seg selv med (- count 1)
+;; som en av de aktuelle parameterene, derfor er det ikke mulig å forenkle uttrykket.
+;; Men vi kan gi prosedyren blokkstruktur uansett:
+(define (fib n)
+  (define (fib-iter a b count)
+    (if (= count 0)
+        b
+        (fib-iter (+ a b) a (- count 1))))
+  (fib-iter 1 0 n))
+
